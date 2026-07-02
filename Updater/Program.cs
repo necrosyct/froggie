@@ -87,7 +87,8 @@ namespace FroggieUpdater
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = AppExe,
-                    WorkingDirectory = InstallDir
+                    WorkingDirectory = InstallDir,
+                    UseShellExecute = true
                 });
             }
             catch (Exception ex)
@@ -102,7 +103,8 @@ namespace FroggieUpdater
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = AppExe,
-                        WorkingDirectory = InstallDir
+                        WorkingDirectory = InstallDir,
+                        UseShellExecute = true
                     });
                 }
             }

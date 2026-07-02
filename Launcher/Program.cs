@@ -244,7 +244,8 @@ namespace FroggieLauncher
             Process.Start(new ProcessStartInfo
             {
                 FileName = AppExe,
-                WorkingDirectory = InstallDir
+                WorkingDirectory = InstallDir,
+                UseShellExecute = true
             });
             Dispatcher.Invoke(() => Application.Current.Shutdown());
         }
