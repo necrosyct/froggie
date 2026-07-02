@@ -1,0 +1,36 @@
+<Window x:Class="Froggie.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Froggie"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        mc:Ignorable="d"
+        Title="Froggie Executor"
+        Height="680" Width="1150"
+        MinHeight="500" MinWidth="850"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResizeWithGrip"
+        Icon="frog_icon.png"
+        Opacity="0"
+        Closed="Window_Closed">
+    <Border x:Name="MainBorder" Background="#0c0c0e" CornerRadius="12" BorderBrush="#1a1a22" BorderThickness="1" RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+            <ScaleTransform x:Name="WindowScale" ScaleX="1.0" ScaleY="1.0" />
+        </Border.RenderTransform>
+        <Grid>
+            <wv2:WebView2 x:Name="webView" DefaultBackgroundColor="Transparent" />
+            <!-- Invisible drag region at the top -->
+            <Border x:Name="DragBar" 
+                    Height="40" 
+                    VerticalAlignment="Top" 
+                    Background="Transparent"
+                    MouseLeftButtonDown="DragBar_MouseLeftButtonDown"
+                    MouseLeftButtonUp="DragBar_MouseLeftButtonUp"
+                    MouseMove="DragBar_MouseMove"/>
+        </Grid>
+    </Border>
+</Window>

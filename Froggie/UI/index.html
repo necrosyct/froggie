@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Froggie Executor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="frog_icon.png">
+</head>
+<body>
+    <!-- ─── Startup Loader Overlay ─── -->
+    <div id="startup-loader" class="startup-loader">
+        <div class="loader-content">
+            <img src="frog_icon.png" class="loader-logo-img" alt="logo">
+            <div class="loader-spinner"></div>
+            <div class="loader-message" id="loader-msg">Loading Froggie UI & Monaco...</div>
+        </div>
+    </div>
+
+    <div class="app-shell">
+
+        <!-- ─── Custom Title Bar ─── -->
+        <header class="titlebar" id="titlebar">
+            <div class="titlebar-left">
+                <img src="frog_icon.png" class="titlebar-logo-img" alt="logo">
+                <span class="titlebar-name">Froggie</span>
+                <span class="titlebar-version">v1.0</span>
+            </div>
+            <div class="titlebar-controls">
+                <button class="titlebar-btn" id="btn-minimize" title="Minimize">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <button class="titlebar-btn" id="btn-maximize" title="Maximize">
+                    <i class="fa-regular fa-square"></i>
+                </button>
+                <button class="titlebar-btn close" id="btn-close" title="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- ─── Main Body ─── -->
+        <div class="app-body">
+
+            <!-- ─── Sidebar Navigation ─── -->
+            <nav class="sidebar">
+                <div class="nav-items">
+                    <button class="nav-btn active" data-page="home" title="Home">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Home</span>
+                    </button>
+                    <button class="nav-btn" data-page="executor" title="Executor">
+                        <i class="fa-solid fa-code"></i>
+                        <span>Executor</span>
+                    </button>
+                    <button class="nav-btn" data-page="scripthub" title="Script Hub">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                        <span>Script Hub</span>
+                    </button>
+                    <button class="nav-btn" data-page="settings" title="Settings">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Settings</span>
+                    </button>
+                </div>
+
+                <!-- Sidebar footer removed -->
+            </nav>
+
+            <!-- ─── Page Content ─── -->
+            <div class="page-container">
+
+                <!-- ═══════════ HOME PAGE ═══════════ -->
+                <section class="page page-home active" id="page-home">
+                    <div class="home-hero">
+                        <div class="hero-glow"></div>
+                        <div class="hero-content">
+                            <span class="hero-emoji">🐸</span>
+                            <h1>Welcome to <span class="accent-text">Froggie</span></h1>
+                            <p>A premium script executor powered by QuorumAPI</p>
+                        </div>
+                    </div>
+                    <div class="home-cards">
+                        <div class="info-card" data-page-link="executor">
+                            <div class="card-icon"><i class="fa-solid fa-code"></i></div>
+                            <h3>Script Executor</h3>
+                            <p>Write and execute Lua scripts with Monaco Editor, manage tabs, and view output logs in real-time.</p>
+                            <span class="card-action">Open <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div class="info-card" data-page-link="scripthub">
+                            <div class="card-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                            <h3>Script Hub</h3>
+                            <p>Browse and load scripts from the RScript API. One-click execute popular community scripts.</p>
+                            <span class="card-action">Browse <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div class="info-card">
+                            <div class="card-icon"><i class="fa-solid fa-folder-open"></i></div>
+                            <h3>Local Scripts</h3>
+                            <p>Manage your saved scripts from the Scripts folder. Quick load and edit anytime.</p>
+                            <span class="card-action" id="home-open-folder">Open Folder <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                    <div class="home-stats">
+                        <div class="stat-box">
+                            <span class="stat-value" id="stat-status">Offline</span>
+                            <span class="stat-label">API Status</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-value" id="stat-scripts">0</span>
+                            <span class="stat-label">Local Scripts</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-value" id="stat-tabs">1</span>
+                            <span class="stat-label">Open Tabs</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ═══════════ EXECUTOR PAGE ═══════════ -->
+                <section class="page page-executor" id="page-executor">
+                    <div class="executor-layout">
+                        
+                        <!-- Workspace Sidebar (Explorer Tree) -->
+                        <aside class="workspace-sidebar" id="workspace-sidebar">
+                            <div class="workspace-header">
+                                <div class="workspace-title" id="ws-header-title">
+                                    <i class="fa-solid fa-folder-tree"></i> Explorer
+                                </div>
+                                <div class="workspace-actions">
+                                    <button id="btn-workspace-refresh" class="btn-icon-xs" title="Refresh">
+                                        <i class="fa-solid fa-rotate"></i>
+                                    </button>
+                                    <button id="btn-workspace-new" class="btn-icon-xs" title="Create Script">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                    <button id="btn-workspace-open-folder" class="btn-icon-xs" title="Open Folder">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Scrollable Explorer Tree -->
+                            <div class="workspace-files" id="workspace-files-list">
+                                <div class="workspace-empty">
+                                    <i class="fa-solid fa-scroll"></i>
+                                    <span>No files found</span>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Collapsible Splitter Handle Toggle Button -->
+                        <button class="workspace-toggle" id="workspace-toggle" title="Toggle Workspace Sidebar">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+
+                        <!-- Right Side Editor + Console -->
+                        <div class="editor-area">
+                            <!-- Tabs + Controls Header -->
+                            <div class="executor-header">
+                                <div class="tabs-area">
+                                    <div class="tabs-scroll" id="tabs-list"></div>
+                                    <button id="btn-add-tab" class="btn-icon-sm" title="New Tab">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="exec-actions">
+                                    <button id="btn-inject" class="btn-pill btn-ghost btn-inject" title="Attach to Roblox">
+                                        <span class="status-dot" id="status-dot"></span>
+                                        <span id="status-text">Inject</span>
+                                    </button>
+                                    <button id="btn-execute" class="btn-pill btn-run" title="Execute">
+                                        <i class="fa-solid fa-play"></i> Execute
+                                    </button>
+                                    <button id="btn-clear" class="btn-pill btn-danger" title="Clear">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                    <button id="btn-open-file" class="btn-pill btn-ghost" title="Open File">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                    </button>
+                                    <button id="btn-save-file" class="btn-pill btn-ghost" title="Save File">
+                                        <i class="fa-solid fa-floppy-disk"></i>
+                                    </button>
+                                    <button id="btn-toggle-console" class="btn-pill btn-ghost" title="Toggle Console">
+                                        <i class="fa-solid fa-terminal"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Monaco Editor Container -->
+                            <div class="editor-wrapper">
+                                <div id="monaco-editor-container"></div>
+                                <!-- Editor Empty State -->
+                                <div id="editor-empty-state" class="editor-empty-state" style="display: none;">
+                                    <div class="empty-state-content">
+                                        <img src="frog_icon.png" class="empty-state-logo-img" alt="logo">
+                                        <h2 class="empty-state-title">Froggie Tabs</h2>
+                                        <p class="empty-state-subtitle">No tabs are open. Create a new tab or import a local script to start coding.</p>
+                                        <div class="empty-state-actions">
+                                            <button class="btn-empty-action create" id="btn-empty-create">
+                                                <i class="fa-solid fa-plus"></i> Create a Tab
+                                            </button>
+                                            <button class="btn-empty-action import" id="btn-empty-import">
+                                                <i class="fa-solid fa-file-import"></i> Import A Script
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Console Logs Drawer -->
+                            <div class="console-drawer" id="console-drawer">
+                                <div class="console-top-bar">
+                                    <div class="console-label"><i class="fa-solid fa-terminal"></i> OUTPUT</div>
+                                    <div class="console-btns">
+                                        <button id="btn-clear-logs" class="btn-icon-xs" title="Clear"><i class="fa-solid fa-ban"></i></button>
+                                        <button id="btn-close-console" class="btn-icon-xs" title="Close"><i class="fa-solid fa-chevron-down"></i></button>
+                                    </div>
+                                </div>
+                                <div class="console-logs" id="console-logs-content">
+                                    <div class="log-entry system">[SYSTEM] Console ready.</div>
+                                </div>
+                            </div>
+                        </div><!-- /editor-area -->
+
+                    </div><!-- /executor-layout -->
+                </section>
+
+                <!-- ═══════════ SCRIPT HUB PAGE ═══════════ -->
+                <section class="page page-scripthub" id="page-scripthub">
+                    <div class="hub-header">
+                        <div class="hub-title-row">
+                            <h2><i class="fa-solid fa-cloud-arrow-down"></i> Script Hub</h2>
+                            <span class="hub-badge">RScript API</span>
+                        </div>
+                        <div class="hub-search-bar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="hub-search" placeholder="Search scripts...">
+                            <button id="btn-hub-favorites-filter" class="btn-icon-sm" title="Show Favorites Only">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+                            <button id="btn-hub-refresh" class="btn-icon-sm" title="Refresh">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hub-grid" id="hub-grid">
+                        <div class="hub-loading">
+                            <div class="spinner"></div>
+                            <p>Loading scripts from RScript...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ═══════════ SETTINGS PAGE ═══════════ -->
+                <section class="page page-settings" id="page-settings">
+                    <div class="settings-header">
+                        <h2><i class="fa-solid fa-gear"></i> Settings</h2>
+                        <p>Configure executor preferences and interface behavior</p>
+                    </div>
+                    
+                    <div class="settings-layout">
+                        <!-- Left Navigation Side-Tabs -->
+                        <aside class="settings-sidebar">
+                            <button class="settings-tab-btn active" data-settings-section="general">
+                                <i class="fa-solid fa-sliders"></i> General
+                            </button>
+                            <button class="settings-tab-btn" data-settings-section="personalization">
+                                <i class="fa-solid fa-palette"></i> Personalization
+                            </button>
+                            <button class="settings-tab-btn" data-settings-section="editor">
+                                <i class="fa-solid fa-code"></i> Editor
+                            </button>
+                            <button class="settings-tab-btn" data-settings-section="interface">
+                                <i class="fa-solid fa-desktop"></i> Interface
+                            </button>
+                        </aside>
+
+                        <!-- Right Settings Panel Content -->
+                        <div class="settings-content">
+                            
+                            <!-- ═══ GENERAL ═══ -->
+                            <div class="settings-section active" id="settings-section-general">
+                                <div class="settings-list">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Auto-attach on launch</span>
+                                            <span class="setting-desc">Bind to Roblox when Froggie starts.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-auto-attach">
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Always on top</span>
+                                            <span class="setting-desc">Keep Froggie above other windows.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-always-on-top">
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Discord Rich Presence</span>
+                                            <span class="setting-desc">Show your Froggie activity on Discord status.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-discord-rpc">
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="settings-group-header">Froggie Folders</div>
+                                <div class="setting-item" style="align-items: flex-start; flex-direction: column; gap: 8px;">
+                                    <div class="setting-info">
+                                        <span class="setting-desc">Quick access to local executor directories.</span>
+                                    </div>
+                                    <div class="utility-actions" style="width: 100%;">
+                                        <button class="btn-utility btn-ghost" id="btn-open-autoexec"><i class="fa-solid fa-folder-open"></i> Open AutoExec</button>
+                                        <button class="btn-utility btn-ghost" id="btn-open-scripts"><i class="fa-solid fa-folder-open"></i> Open Scripts</button>
+                                        <button class="btn-utility btn-ghost" id="btn-open-workspace"><i class="fa-solid fa-folder-open"></i> Open Workspace</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══ PERSONALIZATION ═══ -->
+                            <div class="settings-section" id="settings-section-personalization">
+                                <div class="settings-list">
+                                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 14px;">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Accent color</span>
+                                            <span class="setting-desc">Choose the highlight color used across the entire interface.</span>
+                                        </div>
+                                        <div class="accent-color-grid">
+                                            <button class="theme-color-dot" style="background: #ef4444;" data-color="#ef4444"></button>
+                                            <button class="theme-color-dot" style="background: #a855f7;" data-color="#a855f7"></button>
+                                            <button class="theme-color-dot" style="background: #3b82f6;" data-color="#3b82f6"></button>
+                                            <button class="theme-color-dot active" style="background: #39ff14;" data-color="#39ff14"></button>
+                                            <button class="theme-color-dot" style="background: #f97316;" data-color="#f97316"></button>
+                                            <button class="theme-color-dot" style="background: #ec4899;" data-color="#ec4899"></button>
+                                            <button class="theme-color-dot" style="background: #f59e0b;" data-color="#f59e0b"></button>
+                                            <button class="theme-color-dot" style="background: #6366f1;" data-color="#6366f1"></button>
+                                        </div>
+                                        <div class="accent-custom-row">
+                                            <input type="color" id="setting-custom-color-picker" value="#39ff14" class="color-picker-lg">
+                                            <input type="text" id="setting-custom-hex" value="#39ff14" maxlength="7" class="hex-input">
+                                            <button class="btn-accent-apply" id="btn-apply-custom-hex"><i class="fa-solid fa-check"></i> Apply</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Navigation labels</span>
+                                            <span class="setting-desc">How menu names appear in the sidebar.</span>
+                                        </div>
+                                        <select id="setting-nav-labels" class="setting-select">
+                                            <option value="hover">Show on hover (animated)</option>
+                                            <option value="always">Always visible</option>
+                                            <option value="icons">Icons only</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                            <div class="setting-info">
+                                                <span class="setting-label">Custom background</span>
+                                                <span class="setting-desc">Set a custom background image via URL or file upload.</span>
+                                            </div>
+                                            <label class="switch-toggle">
+                                                <input type="checkbox" id="setting-custom-bg">
+                                                <span class="slider-round"></span>
+                                            </label>
+                                        </div>
+                                        <div class="bg-input-row">
+                                            <input type="text" id="setting-custom-bg-input" placeholder="Paste image URL (https://...)" class="bg-url-input">
+                                            <button class="btn-accent-apply" id="btn-apply-custom-bg"><i class="fa-solid fa-check"></i> Apply</button>
+                                        </div>
+                                        <div class="bg-upload-row">
+                                            <button class="btn-bg-upload" id="btn-bg-upload"><i class="fa-solid fa-upload"></i> Upload Image</button>
+                                            <input type="file" id="bg-file-input" accept="image/*" style="display: none;">
+                                            <span class="bg-upload-hint">Supports JPG, PNG, GIF, WEBP</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Blur radius</span>
+                                            <span class="setting-desc">Adjust background blur level.</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                            <input type="range" id="setting-blur-radius" min="0" max="30" value="12" class="setting-slider">
+                                            <span id="blur-radius-value" style="font-size: 13px; color: var(--text-2); min-width: 24px;">12</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">UI animations</span>
+                                            <span class="setting-desc">Transitions, hover effects and entrance animations.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-animations" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══ EDITOR ═══ -->
+                            <div class="settings-section" id="settings-section-editor">
+                                <div class="settings-list">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Line numbers</span>
+                                            <span class="setting-desc">Show the gutter with line numbers.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-line-numbers" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Word wrap</span>
+                                            <span class="setting-desc">Wrap long lines instead of horizontal scrolling.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-word-wrap">
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Font size</span>
+                                            <span class="setting-desc">Adjust the code editor font size (9–24 pt).</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                            <input type="range" id="setting-font-size" min="9" max="24" value="14" class="setting-slider">
+                                            <span id="font-size-value" style="font-size: 13px; color: var(--text-2); min-width: 32px;">14pt</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Show file explorer</span>
+                                            <span class="setting-desc">Show the sidebar file explorer next to the editor.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-show-explorer" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Show minimap</span>
+                                            <span class="setting-desc">Display a preview scroll minimap on the right of the editor.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-minimap">
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Bracket colorization</span>
+                                            <span class="setting-desc">Colorize matching pairs of brackets.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-bracket-colorization" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Auto-close brackets</span>
+                                            <span class="setting-desc">Insert matching bracket on type automatically.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-auto-close-brackets" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══ INTERFACE ═══ -->
+                            <div class="settings-section" id="settings-section-interface">
+                                <div class="settings-list">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Notification sound</span>
+                                            <span class="setting-desc">Play a sound when attach completes.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-notification-sound" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Restore last page on startup</span>
+                                            <span class="setting-desc">Open the last used tab when starting Froggie.</span>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Auto-logs on error</span>
+                                            <span class="setting-desc">Automatically expand logs console when an error occurs.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-auto-logs" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Log Watcher</span>
+                                            <span class="setting-desc">Listen to and display Roblox client logs in real-time.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-log-watcher" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="settings-group-header">Window & Layout</div>
+                                <div class="settings-list">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Lock window size</span>
+                                            <span class="setting-desc">Disable resizing the main Froggie window.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-lock-window-size">
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Auto-save window size</span>
+                                            <span class="setting-desc">Save window width and height automatically on close.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-auto-save-window" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Lock sidebar width</span>
+                                            <span class="setting-desc">Disable resizing the local script explorer sidebar.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-lock-sidebar">
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <span class="setting-label">Auto-save sidebar width</span>
+                                            <span class="setting-desc">Save the explorer sidebar width automatically on close.</span>
+                                        </div>
+                                        <label class="switch-toggle">
+                                            <input type="checkbox" id="setting-auto-save-sidebar" checked>
+                                            <span class="slider-round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="settings-group-header">System</div>
+                                <div class="utility-actions" style="width: 100%;">
+                                    <button class="btn-utility btn-danger" id="btn-setting-terminate-roblox">
+                                        <i class="fa-solid fa-skull"></i> Terminate Roblox
+                                    </button>
+                                    <button class="btn-utility btn-ghost" id="btn-setting-clear-logs">
+                                        <i class="fa-solid fa-ban"></i> Clear Console Logs
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- /page-container -->
+        </div><!-- /app-body -->
+    </div><!-- /app-shell -->
+
+
+    <!-- ─── "Create New Script" Modal Dialog Overlay ─── -->
+    <div class="modal-overlay" id="new-script-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-signature"></i> Create New Script</h3>
+                <button class="modal-close-btn" id="btn-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modal-script-name">Script Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="modal-script-name" value="NewScript" placeholder="e.g. Flight">
+                        <span class="file-ext">.lua</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="modal-script-folder">Folder</label>
+                    <div class="input-wrapper">
+                        <select id="modal-script-folder" style="flex: 1; background: transparent; height: 36px; color: var(--text-1); border: none; outline: none; font-size: 13px;">
+                            <option value="scripts" style="background: var(--bg-1); color: var(--text-1);">scripts</option>
+                            <option value="autoexec" style="background: var(--bg-1); color: var(--text-1);">autoexec</option>
+                            <option value="workspace" style="background: var(--bg-1); color: var(--text-1);">workspace</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="modal-script-content">Initial Content (Optional)</label>
+                    <textarea id="modal-script-content" placeholder="-- Write your Lua code here..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-modal-cancel" id="btn-modal-cancel">Cancel</button>
+                <button class="btn-modal btn-modal-create" id="btn-modal-create">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Script Hub Detailed Modal Dialog Overlay ─── -->
+    <div class="modal-overlay" id="script-hub-modal">
+        <div class="modal-card detailed-modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-cloud-arrow-down"></i> Script Details</h3>
+                <button class="modal-close-btn" id="btn-hub-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body detailed-modal-body">
+                <div class="detailed-banner" id="detailed-banner">
+                    <div class="banner-overlay"></div>
+                    <h2 id="detailed-title">Script Title</h2>
+                </div>
+                <div class="detailed-info">
+                    <span class="detailed-game" id="detailed-game"><i class="fa-solid fa-gamepad"></i> Game Title</span>
+                </div>
+                <div class="detailed-desc-container">
+                    <label>Description</label>
+                    <p class="detailed-desc" id="detailed-desc">Script description goes here...</p>
+                </div>
+            </div>
+            <div class="modal-footer detailed-modal-footer">
+                <button class="btn-modal btn-modal-cancel" id="btn-hub-modal-copy"><i class="fa-regular fa-copy"></i> Copy Code</button>
+                <button class="btn-modal btn-modal-create" id="btn-hub-modal-load" style="background: var(--blue); color: #fff; box-shadow: 0 2px 10px rgba(0, 180, 255, 0.3);"><i class="fa-solid fa-code"></i> Load to Editor</button>
+                <button class="btn-modal btn-modal-create" id="btn-hub-modal-execute"><i class="fa-solid fa-play"></i> Execute</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ─── Rename Tab Modal (Custom, replaces browser prompt) ─── -->
+    <div class="modal-overlay" id="rename-modal">
+        <div class="modal-card" style="width: 380px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Rename Tab</h3>
+                <button class="modal-close-btn" id="rename-modal-cancel-x" onclick="document.getElementById('rename-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rename-modal-input">New Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="rename-modal-input" placeholder="Script name" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-modal-cancel" id="rename-modal-cancel">Cancel</button>
+                <button class="btn-modal btn-modal-create" id="rename-modal-ok">Rename</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ─── Custom Context Menu for Editor Tabs ─── -->
+    <div class="custom-context-menu" id="tab-context-menu">
+        <div class="menu-item" id="menu-rename"><i class="fa-solid fa-pen-to-square"></i> Rename Tab</div>
+        <div class="menu-item" id="menu-duplicate"><i class="fa-solid fa-copy"></i> Duplicate</div>
+        <div class="menu-item" id="menu-execute"><i class="fa-solid fa-play"></i> Execute</div>
+        <div class="menu-item" id="menu-clear"><i class="fa-solid fa-eraser"></i> Clear Content</div>
+        <div class="menu-separator"></div>
+        <div class="menu-item" id="menu-close-others"><i class="fa-solid fa-rectangle-xmark"></i> Close Others</div>
+        <div class="menu-item danger" id="menu-delete"><i class="fa-solid fa-trash-can"></i> Delete Tab</div>
+    </div>
+
+
+    <!-- ─── Custom Context Menu for Saved Scripts ─── -->
+    <div class="custom-context-menu" id="workspace-context-menu">
+        <div class="menu-item" id="ws-menu-open"><i class="fa-solid fa-folder-open"></i> Open in Editor</div>
+        <div class="menu-item" id="ws-menu-execute"><i class="fa-solid fa-play"></i> Execute Script</div>
+        <div class="menu-separator"></div>
+        <div class="menu-item danger" id="ws-menu-delete"><i class="fa-solid fa-trash-can"></i> Delete Script</div>
+    </div>
+
+
+    <!-- Failsafe: always hide loader even if app.js has errors -->
+    <script>
+        (function() {
+            var FAILSAFE_MS = 2000;
+            setTimeout(function() {
+                var loader = document.getElementById('startup-loader');
+                if (loader && loader.parentNode) {
+                    loader.style.transition = 'opacity 0.4s';
+                    loader.style.opacity = '0';
+                    setTimeout(function() { loader.remove(); }, 500);
+                }
+                // Also send ui_ready to C# if possible
+                try {
+                    if (window.chrome && window.chrome.webview) {
+                        window.chrome.webview.postMessage({ action: 'ui_ready' });
+                    }
+                } catch(e) {}
+            }, FAILSAFE_MS);
+        })();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js" async></script>
+    <!-- Custom Confirm/Alert Modal -->
+    <div class="modal-overlay" id="froggie-confirm-modal">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 id="froggie-confirm-title">Confirm</h3>
+                <button class="modal-close-btn" id="froggie-confirm-cancel-x"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <p id="froggie-confirm-message" style="color: var(--text-2); font-size: 13px; line-height: 1.6;"></p>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; padding: 0 20px 20px;">
+                <button id="froggie-confirm-cancel" class="action-btn" style="background: var(--bg-3); color: var(--text-2);">Cancel</button>
+                <button id="froggie-confirm-ok" class="action-btn" style="background: var(--accent); color: #000; font-weight: 600;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

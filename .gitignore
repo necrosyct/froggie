@@ -1,0 +1,27 @@
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Cache and Build Results
+.vs/
+[Dd]ebug/
+[Dd]ebugPS/
+[Rr]elease/
+[Rr]eleasePS/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bi]n/
+[Oo]bj/
+[Pp]ublish/
+
+# Packages and archives
+*.zip
+*.tar.gz
+*.rar
+
+# Task log files
+*.log
