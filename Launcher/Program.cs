@@ -253,6 +253,8 @@ namespace FroggieLauncher
     public class VersionInfo
     {
         public string Version { get; set; } = "0.0.0";
+
+        [System.Text.Json.Serialization.JsonPropertyName("download_url")]
         public string DownloadUrl { get; set; } = "";
     }
 }
